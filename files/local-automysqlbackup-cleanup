@@ -12,7 +12,7 @@ else
     exit 1
 fi
 
-if [ ! -d ${BACKUPDIR} ]; then
+if [ ! -d "${BACKUPDIR}" ]; then
     echo "BACKUPDIR=${BACKUPDIR} is not a directory!"
     exit 1
 fi
