@@ -16,23 +16,38 @@
   lineinfile: dest=/etc/default/automysqlbackup regexp='CREATE_DATABASE=' line='CREATE_DATABASE=no'
 
 - name: Set BACKUPDIR
-  lineinfile: dest=/etc/default/automysqlbackup regexp='BACKUPDIR=' line='BACKUPDIR="{{ automysqlbackup_BACKUPDIR }}"'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'BACKUPDIR='
+    line: 'BACKUPDIR="{{ automysqlbackup_BACKUPDIR }}"'
   when: automysqlbackup_BACKUPDIR is defined
 
 - name: Set DBEXCLUDE
-  lineinfile: dest=/etc/default/automysqlbackup regexp='DBEXCLUDE=' line='DBEXCLUDE="{{ automysqlbackup_DBEXCLUDE|default('information_schema lost+found performance_schema') }}"'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'DBEXCLUDE='
+    line: "DBEXCLUDE=\"{{ automysqlbackup_DBEXCLUDE|default('information_schema lost+found performance_schema') }}\""
 #  when: automysqlbackup_DBEXCLUDE is defined
 
 - name: Set DOWEEKLY
-  lineinfile: dest=/etc/default/automysqlbackup regexp='DOWEEKLY=' line='DOWEEKLY="{{ automysqlbackup_DOWEEKLY }}"'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'DOWEEKLY='
+    line: 'DOWEEKLY="{{ automysqlbackup_DOWEEKLY }}"'
   when: automysqlbackup_DOWEEKLY is defined
 
 - name: Set MAILADDR
-  lineinfile: dest=/etc/default/automysqlbackup regexp='MAILADDR=' line='MAILADDR="{{ automysqlbackup_MAILADDR }}"'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'MAILADDR='
+    line: 'MAILADDR="{{ automysqlbackup_MAILADDR }}"'
   when: automysqlbackup_MAILADDR is defined
 
 - name: Set MAX_ALLOWED_PACKET
-  lineinfile: dest=/etc/default/automysqlbackup regexp='MAX_ALLOWED_PACKET=' line='MAX_ALLOWED_PACKET="{{ automysqlbackup_MAX_ALLOWED_PACKET }}"'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'MAX_ALLOWED_PACKET='
+    line: 'MAX_ALLOWED_PACKET="{{ automysqlbackup_MAX_ALLOWED_PACKET }}"'
   when: automysqlbackup_MAX_ALLOWED_PACKET is defined
 
 - name: Set MDBNAMES
@@ -47,7 +62,11 @@
     value: mysql.events
 
 - name: Add mysqldump options for event-table to /etc/mysql/debian.cnf (2/3)
-  lineinfile: dest=/etc/mysql/debian.cnf regexp='^events$' line='events' insertbefore='^ignore-table'
+  lineinfile:   
+    dest: /etc/mysql/debian.cnf
+    regexp: '^events$'
+    line: 'events'
+    insertbefore: '^ignore-table'
 
 - name: Add mysqldump options for event-table to /etc/mysql/debian.cnf (3/3)
   lineinfile:
