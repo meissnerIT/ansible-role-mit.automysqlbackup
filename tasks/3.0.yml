@@ -1,0 +1,106 @@
+---
+
+- set_fact:
+    automysqlbackup_config_file: /etc/automysqlbackup/local.conf
+
+- set_fact:
+    automysqlbackup_DBEXCLUDE: "('information_schema' 'lost+found' 'performance_schema')"
+  when: automysqlbackup_DBEXCLUDE is not defined
+
+- name: Ensure no installed automysqlbackup package
+  apt:
+    pkg: automysqlbackup
+    state: absent
+
+- name: Copy automysqlbackup files
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+    mode: 0755
+  with_items:
+    - 3.0/automysqlbackup
+    - 3.0/automysqlbackup-cron
+
+- name: Create /etc/automysqlbackup/
+  file:
+    path: /etc/automysqlbackup/
+    state: directory
+
+- name: Copy automysqlbackup config file
+  copy:
+    src: 3.0/automysqlbackup.conf.sample
+    dest: /etc/automysqlbackup/
+
+- name: "Create {{ automysqlbackup_config_file }}"
+  copy:
+    content: ""
+    dest: "{{ automysqlbackup_config_file }}"
+    force: no
+    mode: 0640
+
+#- name: Ensure CREATE_DATABASE=no in automysqlbackup config
+#  lineinfile:
+#    dest: /etc/default/automysqlbackup
+#    regexp: 'CREATE_DATABASE='
+#    line: "#CONFIG_mysql_dump_create_database='no'"
+
+- name: Set BACKUPDIR
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: "CONFIG_backup_dir="
+    line: "CONFIG_backup_dir='{{ automysqlbackup_BACKUPDIR }}'"
+    create: yes
+  when: automysqlbackup_BACKUPDIR is defined
+
+- name: Set DBEXCLUDE
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_db_exclude=
+    line: "CONFIG_db_exclude={{ automysqlbackup_DBEXCLUDE }}"
+
+- name: Set DOWEEKLY
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_do_weekly=
+    line: "CONFIG_do_weekly='{{ automysqlbackup_DOWEEKLY }}'"
+  when: automysqlbackup_DOWEEKLY is defined
+
+- name: Set MAILADDR
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_mail_address=
+    line: "CONFIG_mail_address='{{ automysqlbackup_MAILADDR }}'"
+  when: automysqlbackup_MAILADDR is defined
+
+- name: Set MAILCONTENT
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_mailcontent=
+    line: "CONFIG_mailcontent='{{ automysqlbackup_MAILCONTENT|default('quiet') }}'"
+
+- name: Set MAX_ALLOWED_PACKET
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_mysql_dump_max_allowed_packet=
+    line: "CONFIG_mysql_dump_max_allowed_packet='{{ automysqlbackup_MAX_ALLOWED_PACKET }}'"
+  when: automysqlbackup_MAX_ALLOWED_PACKET is defined
+
+- name: Set MDBNAMES
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_db_month_names=
+    line: "CONFIG_db_month_names={{ automysqlbackup_MDBNAMES }}"
+  when: automysqlbackup_MDBNAMES is defined
+
+# cron executes at 0:30 and not "daily" as we want it before MIT-Backup
+- name: Add cron.d script
+  copy:
+    src: 3.0/cron.d-local-automysqlbackup
+    dest: /etc/cron.d/local-automysqlbackup
+
+- name: Add cron.daily script local-automysqlbackup-cleanup
+  copy:
+    src: 3.0/local-automysqlbackup-cleanup
+    dest: /etc/cron.daily/local-automysqlbackup-cleanup
+    mode: 0755
+
