@@ -1,0 +1,6 @@
+# Do automysqlbackup before we backup the machine (~2:00)
+#
+# Distributed via ansible - mit.automysqlbackup
+
+30 0 * * *  root    /usr/local/bin/automysqlbackup-cron
+
