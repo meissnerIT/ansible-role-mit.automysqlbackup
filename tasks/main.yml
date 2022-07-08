@@ -85,7 +85,9 @@
 # find weekly monthly -name "*06h25m*gz" -delete
 
 - name: Add cron.d script to do automysqlbackup before MIT-Backup
-  copy: src=cron.d-local-automysqlbackup dest=/etc/cron.d/local-automysqlbackup
+  copy:
+    src: cron.d-local-automysqlbackup
+    dest: /etc/cron.d/local-automysqlbackup
   when: mit_backup == True
 - name: Disable the default automysqlbackup at cron.daily
   lineinfile:
@@ -93,4 +95,14 @@
     regexp: "^/usr/sbin/automysqlbackup"
     line:   "# disabled-by-mit.automysqlbackup /usr/sbin/automysqlbackup"
   when: mit_backup == True
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Logcheck rules
+  copy:
+    src: logcheck-mit-defaults-automysqlbackup
+    dest: /etc/logcheck/ignore.d.server/mit-defaults-automysqlbackup
+  when: "'logcheck' in ansible_facts.packages"
 
