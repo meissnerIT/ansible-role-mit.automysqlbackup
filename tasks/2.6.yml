@@ -13,7 +13,10 @@
   apt: pkg=automysqlbackup
 
 - name: Ensure CREATE_DATABASE=no in automysqlbackup config
-  lineinfile: dest=/etc/default/automysqlbackup regexp='CREATE_DATABASE=' line='CREATE_DATABASE=no'
+  lineinfile:
+    dest: /etc/default/automysqlbackup
+    regexp: 'CREATE_DATABASE='
+    line: 'CREATE_DATABASE=no'
 
 - name: Set BACKUPDIR
   lineinfile:
@@ -91,15 +94,15 @@
 # find weekly monthly -name "*06h25m*gz" -delete
 
 - name: Add cron.d script to do automysqlbackup before MIT-Backup
-  copy:
-    src: 2.6/cron.d-local-automysqlbackup
-    dest: /etc/cron.d/local-automysqlbackup
-  when: mit_backup == True
+  template:
+    src: 2.6/etc/cron.d/local-automysqlbackup
+    dest: /etc/cron.d/
+  when: automysqlbackup_cron_datetime is defined
 
 - name: Disable the default automysqlbackup at cron.daily
   lineinfile:
     dest: /etc/cron.daily/automysqlbackup
     regexp: "^/usr/sbin/automysqlbackup"
     line:   "# disabled-by-mit.automysqlbackup /usr/sbin/automysqlbackup"
-  when: mit_backup == True
+  when: automysqlbackup_cron_datetime is defined
 

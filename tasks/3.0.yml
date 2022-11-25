@@ -94,9 +94,9 @@
 
 # cron executes at 0:30 and not "daily" as we want it before MIT-Backup
 - name: Add cron.d script
-  copy:
-    src: 3.0/cron.d-local-automysqlbackup
-    dest: /etc/cron.d/local-automysqlbackup
+  template:
+    src: 3.0/etc/cron.d/local-automysqlbackup
+    dest: /etc/cron.d/
 
 - name: Add cron.daily script local-automysqlbackup-cleanup
   copy:
