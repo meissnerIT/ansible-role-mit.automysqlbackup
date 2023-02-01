@@ -93,16 +93,16 @@
 # weeky and monthly backup will not be removed and this is not acceptable.
 # find weekly monthly -name "*06h25m*gz" -delete
 
-- name: Add cron.d script to do automysqlbackup before MIT-Backup
-  template:
-    src: 2.6/etc/cron.d/local-automysqlbackup
-    dest: /etc/cron.d/
-  when: automysqlbackup_cron_datetime is defined
-
 - name: Disable the default automysqlbackup at cron.daily
   lineinfile:
     dest: /etc/cron.daily/automysqlbackup
     regexp: "^/usr/sbin/automysqlbackup"
     line:   "# disabled-by-mit.automysqlbackup /usr/sbin/automysqlbackup"
+  when: automysqlbackup_cron_datetime is defined
+
+- name: Add cron.d script to do automysqlbackup at {{ automysqlbackup_cron_datetime }}
+  template:
+    src: 2.6/etc/cron.d/local-automysqlbackup
+    dest: /etc/cron.d/
   when: automysqlbackup_cron_datetime is defined
 
