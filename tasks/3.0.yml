@@ -1,35 +1,38 @@
 ---
 
 - set_fact:
-    automysqlbackup_config_file: /etc/automysqlbackup/local.conf
+    automysqlbackup_config_file: "{{ etc_prefix }}/etc/automysqlbackup/local.conf"
 
 - set_fact:
     automysqlbackup_DBEXCLUDE: "('information_schema' 'lost+found' 'performance_schema')"
   when: automysqlbackup_DBEXCLUDE is not defined
 
 - name: Ensure no installed automysqlbackup package
-  apt:
-    pkg: automysqlbackup
+  package:
+    name: automysqlbackup
     state: absent
 
-- name: Copy automysqlbackup files
+- name: Copy automysqlbackup
   copy:
-    src: "{{ item }}"
+    src: 3.0/automysqlbackup
     dest: /usr/local/bin/
     mode: 0755
-  with_items:
-    - 3.0/automysqlbackup
-    - 3.0/automysqlbackup-cron
 
-- name: Create /etc/automysqlbackup/
+- name: Copy automysqlbackup-cron
+  template:
+    src: 3.0/automysqlbackup-cron
+    dest: /usr/local/bin/
+    mode: 0755
+
+- name: "Create {{ etc_prefix }}/etc/automysqlbackup/"
   file:
-    path: /etc/automysqlbackup/
+    path: "{{ etc_prefix }}/etc/automysqlbackup/"
     state: directory
 
 - name: Copy automysqlbackup config file
   copy:
     src: 3.0/automysqlbackup.conf.sample
-    dest: /etc/automysqlbackup/
+    dest: "{{ etc_prefix }}/etc/automysqlbackup/"
 
 - name: "Create {{ automysqlbackup_config_file }}"
   copy:
@@ -37,12 +40,6 @@
     dest: "{{ automysqlbackup_config_file }}"
     force: no
     mode: 0640
-
-#- name: Ensure CREATE_DATABASE=no in automysqlbackup config
-#  lineinfile:
-#    dest: /etc/default/automysqlbackup
-#    regexp: 'CREATE_DATABASE='
-#    line: "#CONFIG_mysql_dump_create_database='no'"
 
 - name: Set BACKUPDIR
   lineinfile:
@@ -93,14 +90,15 @@
   when: automysqlbackup_MDBNAMES is defined
 
 # cron executes at 0:30 and not "daily" as we want it before MIT-Backup
+# FreeBSD support /usr/local/etc/cron.d, but it does not exists by default (13.2)
 - name: Add cron.d script
   template:
     src: 3.0/etc/cron.d/local-automysqlbackup
-    dest: /etc/cron.d/
+    dest: "{{ etc_prefix }}/etc/cron.d/"
 
 - name: Add cron.daily script local-automysqlbackup-cleanup
   copy:
     src: 3.0/local-automysqlbackup-cleanup
-    dest: /etc/cron.daily/local-automysqlbackup-cleanup
+    dest: "{{ cron_daily }}local-automysqlbackup-cleanup"
     mode: 0755
 

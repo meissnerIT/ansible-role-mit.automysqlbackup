@@ -3,7 +3,7 @@
 # Distributed via ansible - mit.automysqlbackup
 
 PATH=${PATH}:/usr/local/bin
-for conf in $(ls /etc/automysqlbackup/*.conf); do
+for conf in $(ls {{ etc_prefix }}/etc/automysqlbackup/*.conf); do
     automysqlbackup -c ${conf} -b 1>/dev/null
 done
 

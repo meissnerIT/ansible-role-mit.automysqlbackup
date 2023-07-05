@@ -9,6 +9,6 @@
 - name: Logcheck rules
   copy:
     src: logcheck-mit-defaults-automysqlbackup
-    dest: /etc/logcheck/ignore.d.server/mit-defaults-automysqlbackup
+    dest: "{{ etc_prefix }}/etc/logcheck/ignore.d.server/mit-defaults-automysqlbackup"
   when: "'logcheck' in ansible_facts.packages"
 
