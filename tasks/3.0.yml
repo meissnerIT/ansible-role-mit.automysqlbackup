@@ -45,7 +45,8 @@
   lineinfile:
     dest: "{{ automysqlbackup_config_file }}"
     regexp: "CONFIG_backup_dir="
-    line: "CONFIG_backup_dir='{{ automysqlbackup_BACKUPDIR }}'"
+    # no quotes in value (used by local-automysqlbackup-cleanup)
+    line: "CONFIG_backup_dir={{ automysqlbackup_BACKUPDIR }}"
     create: yes
   when: automysqlbackup_BACKUPDIR is defined
 
@@ -89,6 +90,20 @@
     line: "CONFIG_db_month_names={{ automysqlbackup_MDBNAMES }}"
   when: automysqlbackup_MDBNAMES is defined
 
+- name: Set CONFIG_mysql_dump_host
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_mysql_dump_host=
+    line: "CONFIG_mysql_dump_host={{ automysqlbackup_mysql_dump_host }}"
+  when: automysqlbackup_mysql_dump_host is defined
+
+- name: Set CONFIG_mysql_dump_port
+  lineinfile:
+    dest: "{{ automysqlbackup_config_file }}"
+    regexp: CONFIG_mysql_dump_port=
+    line: "CONFIG_mysql_dump_port={{ automysqlbackup_mysql_dump_port }}"
+  when: automysqlbackup_mysql_dump_port is defined
+
 # cron executes at 0:30 and not "daily" as we want it before MIT-Backup
 # FreeBSD support /usr/local/etc/cron.d, but it does not exists by default (13.2)
 - name: Add cron.d script
@@ -97,7 +112,7 @@
     dest: "{{ etc_prefix }}/etc/cron.d/"
 
 - name: Add cron.daily script local-automysqlbackup-cleanup
-  copy:
+  template:
     src: 3.0/local-automysqlbackup-cleanup
     dest: "{{ cron_daily }}local-automysqlbackup-cleanup"
     mode: 0755
