@@ -82,8 +82,8 @@
     insertbefore: '^\[mysqldump\]$'
 
 - name: Add cron.daily script local-automysqlbackup-cleanup
-  copy:
-    src: 2.6/local-automysqlbackup-cleanup
+  template:
+    src: 2.6/etc/cron.daily/local-automysqlbackup-cleanup
     dest: /etc/cron.daily/local-automysqlbackup-cleanup
     mode: 0755
 
